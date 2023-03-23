@@ -436,6 +436,41 @@ Redis repository is the repository interface for using redis work on-top of [go-
 
 # Getting Start
 
+## Connection
+### Redis
+
+return `*redis.Client` when successfully
+
+```go
+ cache, err := gosdk.InitRedisConnect(RedisConfig)
+ if err != nil {
+    // handle error
+ }
+```
+
+**Parameters**
+
+| name          | description       |
+|---------------|-------------------|
+| Redis Config  | Redis config      |
+
+
+**Configuration**
+
+```go
+type RedisConfig struct {
+	Host     string `mapstructure:"host"`
+	Password string `mapstructure:"password"`
+	DB       int    `mapstructure:"db"`
+}
+```
+| name     | description                                     | example        |
+|----------|-------------------------------------------------|----------------|
+| Host     | The host of the redis in format `hostname:port` | localhost:6379 |
+| Password | Redis password                                  | password       |
+| DB       | The database number                             | 0              |
+
+
 ## Initialization
 Redis repository can be initialized by **NewRedisRepository** method
 
