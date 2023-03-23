@@ -1,4 +1,4 @@
-package repository
+package repositorysdk
 
 import (
 	"fmt"
@@ -6,6 +6,8 @@ import (
 	"gorm.io/gorm"
 	gormLogger "gorm.io/gorm/logger"
 	"strconv"
+
+	"github.com/go-redis/redis/v8"
 )
 
 type PostgresDatabaseConfig struct {
@@ -30,6 +32,21 @@ func InitPostgresDatabase(conf *PostgresDatabaseConfig, isDebug bool) (db *gorm.
 	if err != nil {
 		return nil, err
 	}
+
+	return
+}
+
+type RedisConfig struct {
+	Host     string `mapstructure:"host"`
+	Password string `mapstructure:"password"`
+	DB       int    `mapstructure:"db"`
+}
+
+func InitRedisConnect(conf *RedisConfig) (cache *redis.Client, err error) {
+	cache = redis.NewClient(&redis.Options{
+		Addr: conf.Host,
+		DB:   conf.DB,
+	})
 
 	return
 }

@@ -1,4 +1,4 @@
-package repository
+package repositorysdk
 
 import (
 	"github.com/google/uuid"
