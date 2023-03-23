@@ -2,7 +2,7 @@ package repositorysdk
 
 import (
 	"github.com/google/uuid"
-	utils "github.com/thinc-org/newbie-utils"
+	gosdk "github.com/thinc-org/newbie-gosdk"
 	"gorm.io/gorm"
 	"time"
 )
@@ -16,7 +16,7 @@ type Base struct {
 
 func (b *Base) BeforeCreate(_ *gorm.DB) error {
 	if b.ID == nil {
-		b.ID = utils.UUIDAdr(uuid.New())
+		b.ID = gosdk.UUIDAdr(uuid.New())
 	}
 
 	return nil
