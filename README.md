@@ -3,6 +3,48 @@ Gorm repository is the instance that has the code set for simple use case of gor
 
 # Getting Start
 
+## Connection
+### PostgreSQL
+
+return `*gorm.DB` when successfully
+
+```go
+db, err := repository.InitDatabase(PostgresDatabaseConfig, Debug)
+if err != nil {
+    // handle error
+}
+```
+
+**Parameters**
+
+| name                      | description        |
+|---------------------------|--------------------|
+| Postgres Database Config  | Postgres config    |
+| Debug                     | Enable debug mode  |
+
+
+**Configuration**
+
+```go
+type PostgresDatabaseConfig struct {
+    Host     string `mapstructure:"host"`
+    Port     int    `mapstructure:"port"`
+    User     string `mapstructure:"username"`
+    Password string `mapstructure:"password"`
+    Name     string `mapstructure:"name"`
+    SSL      string `mapstructure:"ssl"`
+}
+```
+
+| name     | description              | example   |
+|----------|--------------------------|-----------|
+| Host     | Hostname of the postgres | localhost | 
+| Port     | Port of database         | 5432      |
+| User     | Postgres username        | postgres  |
+| Password | Postgres password        | root      |
+| Name     | The database name        | postgres  |
+| SSL      | SSL mode                 | disable   |
+
 ## Initialize
 
 ```go
