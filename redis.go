@@ -7,26 +7,26 @@ import (
 	"time"
 )
 
-type RedisRepository[T Entity] interface {
-	SaveCache(string, T, int) error
+type RedisRepository interface {
+	SaveCache(string, interface{}, int) error
 	SaveHashCache(string, string, string, int) error
 	SaveAllHashCache(string, map[string]string, int) error
-	GetCache(string, T) error
+	GetCache(string, interface{}) error
 	GetHashCache(string, string) (string, error)
 	GetAllHashCache(string) (map[string]string, error)
 	RemoveCache(string) error
 	SetExpire(string, int) error
 }
 
-type redisRepository[T Entity] struct {
+type redisRepository struct {
 	client *redis.Client
 }
 
-func NewRedisRepository[T Entity](client *redis.Client) RedisRepository[T] {
-	return &redisRepository[T]{client: client}
+func NewRedisRepository(client *redis.Client) RedisRepository {
+	return &redisRepository{client: client}
 }
 
-func (r *redisRepository[T]) SaveCache(key string, value T, ttl int) (err error) {
+func (r *redisRepository) SaveCache(key string, value interface{}, ttl int) (err error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
@@ -38,7 +38,7 @@ func (r *redisRepository[T]) SaveCache(key string, value T, ttl int) (err error)
 	return r.client.Set(ctx, key, v, time.Duration(ttl)*time.Second).Err()
 }
 
-func (r *redisRepository[T]) SaveHashCache(key string, field string, value string, ttl int) error {
+func (r *redisRepository) SaveHashCache(key string, field string, value string, ttl int) error {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
@@ -49,7 +49,7 @@ func (r *redisRepository[T]) SaveHashCache(key string, field string, value strin
 	return r.client.Expire(ctx, key, time.Duration(ttl)*time.Second).Err()
 }
 
-func (r *redisRepository[T]) SaveAllHashCache(key string, value map[string]string, ttl int) error {
+func (r *redisRepository) SaveAllHashCache(key string, value map[string]string, ttl int) error {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
@@ -60,21 +60,21 @@ func (r *redisRepository[T]) SaveAllHashCache(key string, value map[string]strin
 	return r.client.Expire(ctx, key, time.Duration(ttl)*time.Second).Err()
 }
 
-func (r *redisRepository[T]) GetHashCache(key string, field string) (string, error) {
+func (r *redisRepository) GetHashCache(key string, field string) (string, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
 	return r.client.HGet(ctx, key, field).Result()
 }
 
-func (r *redisRepository[T]) GetAllHashCache(key string) (map[string]string, error) {
+func (r *redisRepository) GetAllHashCache(key string) (map[string]string, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
 	return r.client.HGetAll(ctx, key).Result()
 }
 
-func (r *redisRepository[T]) GetCache(key string, value T) (err error) {
+func (r *redisRepository) GetCache(key string, value interface{}) (err error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
@@ -86,7 +86,7 @@ func (r *redisRepository[T]) GetCache(key string, value T) (err error) {
 	return json.Unmarshal([]byte(v), value)
 }
 
-func (r *redisRepository[T]) RemoveCache(key string) (err error) {
+func (r *redisRepository) RemoveCache(key string) (err error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
@@ -94,7 +94,7 @@ func (r *redisRepository[T]) RemoveCache(key string) (err error) {
 	return err
 }
 
-func (r *redisRepository[T]) SetExpire(key string, ttl int) error {
+func (r *redisRepository) SetExpire(key string, ttl int) error {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
