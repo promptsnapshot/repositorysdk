@@ -51,3 +51,9 @@ func (p *PaginationMetadata) GetCurrentPage() int {
 	}
 	return p.CurrentPage
 }
+
+func (p *PaginationMetadata) CalItemPerPage() {
+	if p.ItemCount < p.ItemsPerPage {
+		p.ItemsPerPage = p.ItemCount
+	}
+}
