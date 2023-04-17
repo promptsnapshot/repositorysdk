@@ -22,6 +22,20 @@ func (b *Base) BeforeCreate(_ *gorm.DB) error {
 	return nil
 }
 
+type BaseHardDelete struct {
+	ID        *uuid.UUID `json:"id" gorm:"primary_key"`
+	CreatedAt time.Time  `json:"created_at" gorm:"type:timestamp;autoCreateTime:nano"`
+	UpdatedAt time.Time  `json:"updated_at" gorm:"type:timestamp;autoUpdateTime:nano"`
+}
+
+func (b *BaseHardDelete) BeforeCreate(_ *gorm.DB) error {
+	if b.ID == nil {
+		b.ID = gosdk.UUIDAdr(uuid.New())
+	}
+
+	return nil
+}
+
 type PaginationMetadata struct {
 	ItemsPerPage int
 	ItemCount    int
