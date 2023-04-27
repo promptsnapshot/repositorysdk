@@ -18,6 +18,8 @@ type RedisRepository interface {
 	SetExpire(string, int) error
 }
 
+const RedisKeepTTL = 0
+
 type redisRepository struct {
 	client *redis.Client
 }
@@ -26,6 +28,16 @@ func NewRedisRepository(client *redis.Client) RedisRepository {
 	return &redisRepository{client: client}
 }
 
+// SaveCache saves cache to redis by using the command `SET`.
+// Zero expiration time means no expiration time for cache.
+//
+// Parameters:
+// - key: the cache key.
+// - value: the cache value to be saved.
+// - ttl: the expiration time for cache in seconds, 0 means no expiration time.
+//
+// Returns:
+// - err: an error if something goes wrong, otherwise nil.
 func (r *redisRepository) SaveCache(key string, value interface{}, ttl int) (err error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
@@ -38,6 +50,16 @@ func (r *redisRepository) SaveCache(key string, value interface{}, ttl int) (err
 	return r.client.Set(ctx, key, v, time.Duration(ttl)*time.Second).Err()
 }
 
+// SaveHashCache saves a single field cache to redis.
+//
+// Parameters:
+// - key: the cache key.
+// - field: the cache field to be saved.
+// - value: the cache value to be saved.
+// - ttl: the expiration time for cache in seconds.
+//
+// Returns:
+// - err: an error if something goes wrong, otherwise nil.
 func (r *redisRepository) SaveHashCache(key string, field string, value string, ttl int) error {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
@@ -46,9 +68,23 @@ func (r *redisRepository) SaveHashCache(key string, field string, value string, 
 		return err
 	}
 
-	return r.client.Expire(ctx, key, time.Duration(ttl)*time.Second).Err()
+	if ttl > 0 {
+		return r.client.Expire(ctx, key, time.Duration(ttl)*time.Second).Err()
+
+	}
+
+	return nil
 }
 
+// SaveAllHashCache saves multiple field cache to redis.
+//
+// Parameters:
+// - key: the cache key.
+// - value: a map containing the fields and values to be saved.
+// - ttl: the expiration time for cache in seconds.
+//
+// Returns:
+// - err: an error if something goes wrong, otherwise nil.
 func (r *redisRepository) SaveAllHashCache(key string, value map[string]string, ttl int) error {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
@@ -57,9 +93,23 @@ func (r *redisRepository) SaveAllHashCache(key string, value map[string]string, 
 		return err
 	}
 
-	return r.client.Expire(ctx, key, time.Duration(ttl)*time.Second).Err()
+	if ttl > 0 {
+		return r.client.Expire(ctx, key, time.Duration(ttl)*time.Second).Err()
+
+	}
+
+	return nil
 }
 
+// GetHashCache retrieves a single field cache from redis.
+//
+// Parameters:
+// - key: the cache key.
+// - field: the cache field to be retrieved.
+//
+// Returns:
+// - string: the cache value if it exists.
+// - err: an error if something goes wrong, otherwise nil.
 func (r *redisRepository) GetHashCache(key string, field string) (string, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
@@ -67,6 +117,14 @@ func (r *redisRepository) GetHashCache(key string, field string) (string, error)
 	return r.client.HGet(ctx, key, field).Result()
 }
 
+// GetAllHashCache retrieves all fields of a hash cache from redis.
+//
+// Parameters:
+// - key: the cache key.
+//
+// Returns:
+// - map[string]string: a map containing all the fields and their values if the hash exists.
+// - error: an error if something goes wrong, otherwise nil.
 func (r *redisRepository) GetAllHashCache(key string) (map[string]string, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
@@ -74,6 +132,14 @@ func (r *redisRepository) GetAllHashCache(key string) (map[string]string, error)
 	return r.client.HGetAll(ctx, key).Result()
 }
 
+// GetCache retrieves a cache from redis.
+//
+// Parameters:
+// - key: the cache key.
+// - value: a pointer to the object that will hold the unmarshalled cache value.
+//
+// Returns:
+// - error: an error if something goes wrong, otherwise nil.
 func (r *redisRepository) GetCache(key string, value interface{}) (err error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
@@ -86,6 +152,13 @@ func (r *redisRepository) GetCache(key string, value interface{}) (err error) {
 	return json.Unmarshal([]byte(v), value)
 }
 
+// RemoveCache removes a cache from redis.
+//
+// Parameters:
+// - key: the cache key to be removed.
+//
+// Returns:
+// - error: an error if something goes wrong, otherwise nil.
 func (r *redisRepository) RemoveCache(key string) (err error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
@@ -94,6 +167,14 @@ func (r *redisRepository) RemoveCache(key string) (err error) {
 	return err
 }
 
+// SetExpire sets an expiration time for a cache in redis.
+//
+// Parameters:
+// - key: the cache key to set expiration for.
+// - ttl: the expiration time for cache in seconds.
+//
+// Returns:
+// - error: an error if something goes wrong, otherwise nil.
 func (r *redisRepository) SetExpire(key string, ttl int) error {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
