@@ -16,6 +16,7 @@ type RedisRepository interface {
 	GetAllHashCache(string) (map[string]string, error)
 	RemoveCache(string) error
 	SetExpire(string, int) error
+	Exist(key string) (bool, error)
 }
 
 const RedisKeepTTL = 0
@@ -180,4 +181,20 @@ func (r *redisRepository) SetExpire(key string, ttl int) error {
 	defer cancel()
 
 	return r.client.Expire(ctx, key, time.Duration(ttl)*time.Second).Err()
+}
+
+// Exist checks if a key exists in the Redis database.
+// Parameters:
+// - key: the key to check.
+//
+// Return values:
+// - bool: true if the key exists, false otherwise.
+// - error: if the Redis operation fails.
+func (r *redisRepository) Exist(key string) (bool, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	res := r.client.Exists(ctx, key)
+
+	return res.Val() == 1, res.Err()
 }
