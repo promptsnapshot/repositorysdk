@@ -11,11 +11,15 @@ type RedisRepository interface {
 	SaveCache(string, interface{}, int) error
 	SaveHashCache(string, string, string, int) error
 	SaveAllHashCache(string, map[string]string, int) error
+	AddSetMember(key string, member interface{}, ttl int) error
 	GetCache(string, interface{}) error
 	GetHashCache(string, string) (string, error)
 	GetAllHashCache(string) (map[string]string, error)
 	RemoveCache(string) error
+	RemoveSetMember(key string, member interface{}) error
+	RemoveHashCache(key string, field string) error
 	SetExpire(string, int) error
+	CheckSetMember(key string, member interface{}) (bool, error)
 	Exist(key string) (bool, error)
 }
 
@@ -71,7 +75,6 @@ func (r *redisRepository) SaveHashCache(key string, field string, value string, 
 
 	if ttl > 0 {
 		return r.client.Expire(ctx, key, time.Duration(ttl)*time.Second).Err()
-
 	}
 
 	return nil
@@ -133,6 +136,21 @@ func (r *redisRepository) GetAllHashCache(key string) (map[string]string, error)
 	return r.client.HGetAll(ctx, key).Result()
 }
 
+// RemoveHashCache remove a single field of hash cache.
+//
+// Parameters:
+// - key: the cache key.
+// - field: the cache field to be saved.
+//
+// Returns:
+// - err: an error if something goes wrong, otherwise nil.
+func (r *redisRepository) RemoveHashCache(key string, field string) error {
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	return r.client.HDel(ctx, key, field).Err()
+}
+
 // GetCache retrieves a cache from redis.
 //
 // Parameters:
@@ -166,6 +184,60 @@ func (r *redisRepository) RemoveCache(key string) (err error) {
 
 	_, err = r.client.Del(ctx, key).Result()
 	return err
+}
+
+// CheckSetMember check is member existed in the set
+//
+// Parameters:
+// - key: the member to check.
+//
+// Return values:
+// - bool: true if the key exists, false otherwise.
+// - error: if the Redis operation fails.
+func (r *redisRepository) CheckSetMember(key string, member interface{}) (bool, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	return r.client.SIsMember(ctx, key, member).Result()
+}
+
+// AddSetMember add member to set
+//
+// Parameters:
+// - key: the member to check.
+// - member: the member.
+// - ttl: expiration time of this cache.
+//
+// Return values:
+// - error: if the Redis operation fails.
+func (r *redisRepository) AddSetMember(key string, member interface{}, ttl int) error {
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	if err := r.client.SAdd(ctx, key, member, ttl).Err(); err != nil {
+		return err
+	}
+
+	if ttl > 0 {
+		return r.client.Expire(ctx, key, time.Duration(ttl)*time.Second).Err()
+	}
+
+	return nil
+}
+
+// RemoveSetMember remove member from set
+//
+// Parameters:
+// - key: the member to check.
+// - member: the member.
+//
+// Return values:
+// - error: if the Redis operation fails.
+func (r *redisRepository) RemoveSetMember(key string, member interface{}) error {
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	return r.client.SRem(ctx, key, member).Err()
 }
 
 // SetExpire sets an expiration time for a cache in redis.
