@@ -21,6 +21,7 @@ type RedisRepository interface {
 	SetExpire(string, int) error
 	CheckSetMember(key string, member interface{}) (bool, error)
 	Exist(key string) (bool, error)
+	GetClient() *redis.Client
 }
 
 const RedisKeepTTL = 0
@@ -31,6 +32,14 @@ type redisRepository struct {
 
 func NewRedisRepository(client *redis.Client) RedisRepository {
 	return &redisRepository{client: client}
+}
+
+// GetClient get the redis client
+//
+// Returns:
+// - *redis.Client
+func (r *redisRepository) GetClient() *redis.Client {
+	return r.client
 }
 
 // SaveCache saves cache to redis by using the command `SET`.
