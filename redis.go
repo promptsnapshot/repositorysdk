@@ -11,7 +11,7 @@ type RedisRepository interface {
 	SaveCache(string, interface{}, int) error
 	SaveHashCache(string, string, string, int) error
 	SaveAllHashCache(string, map[string]string, int) error
-	AddSetMember(key string, member interface{}, ttl int) error
+	AddSetMember(key string, ttl int, member ...interface{}) error
 	GetCache(string, interface{}) error
 	GetHashCache(string, string) (string, error)
 	GetAllHashCache(string) (map[string]string, error)
@@ -210,11 +210,11 @@ func (r *redisRepository) CheckSetMember(key string, member interface{}) (bool, 
 //
 // Return values:
 // - error: if the Redis operation fails.
-func (r *redisRepository) AddSetMember(key string, member interface{}, ttl int) error {
+func (r *redisRepository) AddSetMember(key string, ttl int, member ...interface{}) error {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
-	if err := r.client.SAdd(ctx, key, member, ttl).Err(); err != nil {
+	if err := r.client.SAdd(ctx, key, member).Err(); err != nil {
 		return err
 	}
 
