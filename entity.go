@@ -1,8 +1,8 @@
 package repositorysdk
 
 import (
+	gosdk "github.com/PromptSnapshot/gosdk"
 	"github.com/google/uuid"
-	gosdk "github.com/thinc-org/newbie-gosdk"
 	"gorm.io/gorm"
 	"time"
 )
