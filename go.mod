@@ -1,4 +1,4 @@
-module github.com/thinc-org/newbie-repository
+module github.com/PromptSnapshot/repositorysdk
 
 go 1.20
 
