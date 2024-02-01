@@ -223,7 +223,7 @@ func (r *redisRepository) AddSetMember(key string, ttl int, member ...interface{
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
-	if err := r.client.SAdd(ctx, key, member).Err(); err != nil {
+	if err := r.client.SAdd(ctx, key, member...).Err(); err != nil {
 		return err
 	}
 
