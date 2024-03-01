@@ -68,7 +68,7 @@ func DeleteWithoutResult[T Entity](id string, entity T) func(db *gorm.DB) *gorm.
 }
 
 type GormRepository[T Entity] interface {
-	FindAll(metadata *PaginationMetadata, entities *[]T, scope ...func(db *gorm.DB) *gorm.DB) error
+	FindAll(metadata *PaginationMetadata, entities *[]T) error
 	FindOne(id string, entity T, scope ...func(db *gorm.DB) *gorm.DB) error
 	Create(entity T, scope ...func(db *gorm.DB) *gorm.DB) error
 	Update(id string, entity T, scope ...func(db *gorm.DB) *gorm.DB) error
@@ -94,9 +94,9 @@ func (r *gormRepository[T]) GetDB() *gorm.DB {
 // FindAll the entities with pagination metadata and scopes.
 // Pagination is achieved by using the Pagination function.
 // The method updates the metadata to reflect the total number of items and the number of items on the current page.
-func (r *gormRepository[T]) FindAll(metadata *PaginationMetadata, entities *[]T, scope ...func(db *gorm.DB) *gorm.DB) error {
+func (r *gormRepository[T]) FindAll(metadata *PaginationMetadata, entities *[]T) error {
 	if err := r.db.
-		Scopes(Pagination[T](entities, metadata, r.db, scope...)).
+		Scopes(Pagination(metadata, r.db)).
 		Find(&entities).
 		Error; err != nil {
 		return err
