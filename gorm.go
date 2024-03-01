@@ -10,11 +10,9 @@ type Entity interface {
 }
 
 // Pagination returns a function that can be used as a GORM scope to paginate results. It takes a pointer to a slice of the entity type, a pointer to a PaginationMetadata struct, a GORM database instance, and an optional list of additional GORM scopes. It calculates the total number of items that match the query, updates the provided PaginationMetadata struct with the total number of items, total number of pages, and current page number, and returns a GORM scope that can be used to fetch the results for the current page.
-func Pagination[T Entity](value *[]T, meta *PaginationMetadata, db *gorm.DB, scopes ...func(db *gorm.DB) *gorm.DB) func(db *gorm.DB) *gorm.DB {
+func Pagination(meta *PaginationMetadata, db *gorm.DB) func(db *gorm.DB) *gorm.DB {
 	var totalItems int64
-	db.Model(&value).
-		Scopes(scopes...).
-		Count(&totalItems)
+	db.Count(&totalItems)
 
 	meta.TotalItem = int(totalItems)
 	totalPages := math.Ceil(float64(totalItems) / float64(meta.GetItemPerPage()))
