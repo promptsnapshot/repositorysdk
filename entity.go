@@ -59,11 +59,11 @@ func (p *PaginationMetadata) GetOffset() int {
 
 // GetItemPerPage is a method that returns the number of items per page, ensuring that the value is within a certain range.
 func (p *PaginationMetadata) GetItemPerPage() int {
-	if p.ItemsPerPage < 10 {
-		p.ItemsPerPage = 10
+	if p.ItemsPerPage < MinimumQueryEntities {
+		p.ItemsPerPage = MinimumQueryEntities
 	}
-	if p.ItemsPerPage > 100 {
-		p.ItemsPerPage = 100
+	if p.ItemsPerPage > MaximumQueryEntities {
+		p.ItemsPerPage = MaximumQueryEntities
 	}
 
 	return p.ItemsPerPage
